@@ -12,7 +12,7 @@ class gVal() :
 
 #############################
 # ※ユーザ自由変更※
-	DEF_EXAMPLE_ACCOUNT = "lucida3rd@mstdn.mynoghra.jp"		#画面に記載例として表示するアカウント
+	DEF_EXAMPLE_ACCOUNT = "h3zjp@mstdn.h3z.jp"		#画面に記載例として表示するアカウント
 	DEF_USERDATA_PATH   = '../botdata/'						#ユーザデータフォルダ
 ###	DEF_USERDATA_PATH   = '../botdata_test/'				#ユーザデータフォルダ
 	DEF_TIMEZONE = 9										# 9=日本時間 最終更新日補正用
