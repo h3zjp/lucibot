@@ -4,7 +4,7 @@
 # るしぼっと4
 #   Class   ：セットアップ
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/9/29
+#   Update  ：2019/11/22
 #####################################################
 # Private Function:
 #   __initDB(self):
@@ -14,6 +14,8 @@
 #   __create_TBL_TRAFFIC_DATA( self, inOBJ_DB, inTBLname="TBL_TRAFFIC_DATA" ):
 #   __create_TBL_WORD_CORRECT( self, inOBJ_DB, inTBLname="TBL_WORD_CORRECT" ):
 #   __create_TBL_CLAZ_LIST( self, inOBJ_DB, inTBLname="TBL_CLAZ_LIST" ):
+#   __create_TBL_TREND( self, inOBJ_DB, inTBLname="TBL_TREND" ):
+#   __create_TBL_TWITTER_READER( self, inOBJ_DB, inTBLname="TBL_TWITTER_READER" ):
 #
 # Instance Function:
 #   __init__(self):
@@ -502,6 +504,8 @@ class CLS_Setup():
 		self.__create_TBL_TRAFFIC_DATA( wOBJ_DB )
 		self.__create_TBL_WORD_CORRECT( wOBJ_DB )
 		self.__create_TBL_CLAZ_LIST( wOBJ_DB )
+		self.__create_TBL_TREND( wOBJ_DB )
+		self.__create_TBL_TWITTER_READER( wOBJ_DB )
 		
 		#############################
 		# DBのクローズ
@@ -664,6 +668,57 @@ class CLS_Setup():
 					"lupdate     TIMESTAMP," + \
 					"keeped      BOOL  DEFAULT false," + \
 					" PRIMARY KEY ( claz ) ) ;"
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_TREND
+#####################################################
+	def __create_TBL_TREND( self, inOBJ_DB, inTBLname="TBL_TREND" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"rank        INTEGER  DEFAULT 0," + \
+					"name        TEXT  NOT NULL," + \
+					"domain      TEXT  NOT NULL," + \
+					"uses        INTEGER  DEFAULT 0," + \
+					"accs        INTEGER  DEFAULT 0," + \
+					"lupdate     TIMESTAMP" + \
+					" ) ;"
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_TWITTER_READER
+#####################################################
+	def __create_TBL_TWITTER_READER( self, inOBJ_DB, inTBLname="TBL_TWITTER_READER" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"id          TEXT  NOT NULL," + \
+					"text        TEXT  NOT NULL," + \
+					"screen_name TEXT  NOT NULL," + \
+					"send_user   TEXT  NOT NULL," + \
+					"tags        TEXT  NOT NULL," + \
+					"lupdate     TIMESTAMP," + \
+					"sended      BOOL  DEFAULT false," + \
+					" PRIMARY KEY ( id ) ) ;"
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return

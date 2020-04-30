@@ -1,7 +1,7 @@
 ## るしぼっと4 Readme（取扱説明書 兼 設計仕様書）
 ::BotName= Lucibot4 (master)  
-::BotDate= 2019/9/30  
-::Version= 4.1.0.9  
+::BotDate= 2020/1/6  
+::Version= 4.1.6.2  
 ::Admin= Lucida（lucida3rd@mstdn.mynoghra.jp）  
 ::github= https://github.com/lucida3rd/lucibot  
 
@@ -30,11 +30,13 @@ python3で作成したmastodonクラウド環境下で動くことを前提に�
     * [リプライ機能](#iReplyFunc)
     * [ワード学習機能](#iWordStudy)
     * [トラヒック表示機能](#iTrafficView)
+    * [トレンド機能](#iTrend)
     * [ハード監視機能](#iHardLook)
     * [ユーザ収集機能](#iUserCorrect)
     * [自動フォロー機能](#iAutoFollow)
     * [手動トゥート機能](#iManualToot)
     * [twitter連携機能](#iTwitter)
+    * [twitterリーダ機能](#iTwitterReader)
     * [ログ機能](#iLogging)
     * [bot排他機能](#iExclusive)
 * [免責事項](#iDisclaimer)
@@ -44,7 +46,7 @@ python3で作成したmastodonクラウド環境下で動くことを前提に�
 <a id="iSetup"></a>
 ## システム要件・セットアップなど
 るしぼっとのシステム要件、セットアップ方法については、別紙のセットアップ手順書に記載しています。よくお読みください。
-* [セットアップ手順書](https://github.com/lucida3rd/lucibot/readme_setup.md)
+* [セットアップ手順書](https://github.com/lucida3rd/lucibot/blob/master/readme_setup.md)
 
 
 
@@ -121,6 +123,7 @@ $ python3 run.py
 | ワード学習機能        | 連合TL         |   〇   |   －    |MasterドメインはSub   |
 | ユーザ収集機能        | 連合TL         |   〇   |   －    |MasterドメインはSub   |
 | トラヒック機能        | ローカルTL     |   〇   |   〇    |                      |
+| トレンド機能          | －             |   〇   |   〇    |MasterドメインはSub   |
 | 自動フォロー機能      | 通知TL         |   〇   |   －    |                      |
 | リプライ機能          | 通知TL         |   〇   |   〇    |                      |
 | リプライブースト機能  | 通知TL         |   －   |   〇    |                      |
@@ -128,6 +131,7 @@ $ python3 run.py
 | ハード監視機能        | －             |   〇   |   －    |                      |
 | 手動トゥート機能      | －             |   〇   |   △    |Subは同報配信のみ     |
 | Twitter連携機能       | Twitter TL     |   〇   |   －    |                      |
+| Twitterリーダ機能     | Twitter TL     |   〇   |   〇    |状況による            |
 | ログ機能              | －             |   〇   |   〇    |                      |
 | 排他機能              | －             |   〇   |   〇    |                      |
 
@@ -266,6 +270,18 @@ botが学習した単語を組み合わせて適当にトゥートします。
 
 
 
+<a id="iTrend"></a>
+## トレンド
+1時間ごとに任意のドメインのトレンドを集計し、botでトゥートします。  
+トゥートは非公開でおこなわれます。  
+この情報はデータベースに記録されます。  
+　機能有効：Trend=on  
+
+補足：  
+　botでトゥートする際、botのドメインでハッシュタグ検索できないものは無駄を省くため除外されます。  
+
+
+
 <a id="iAutoFollow"></a>
 ## 自動フォロー機能
 この機能はMasterUser専用の機能です。  
@@ -339,14 +355,29 @@ twitterが有効の場合は、twitterに転送することもできます。
 ## twitter連携機能
 APIを取得したアカウントに連携し、トゥートをツイートします。  
 またTwitterタイムライン上の指定ユーザのツイートをmastodonにトゥートします。  
-取得するタイムラインは、ホーム、ユーザ、リストの３種類が設定できます。  
 本機能を有効にするにはTwitter APIを取得する必要があります。（＜twitter APIの取得方法＞参照）  
 　機能有効：Twitter=on  
 
 ＜ツイートされる内容＞  
 * 1時間ごとのmastodonトラヒック  
 * 同報配信トゥート  
-　ツイート指定ファイル：toot/twitter.txt  
+
+
+
+<a id="iTwitterReader"></a>
+## twitterリーダ機能
+twitter上のホームタイムラインからパターンを読み取り、mastodonにトゥートします。  
+また1時間ごとにtwitterのトレンドをmastodonにトゥートします。  
+twitterのパターン、トゥートを送信するアカウントはパターンファイルで指定します。  
+本機能を有効にするにはTwitter連携設定をする必要があります。（＜twitter連携機能＞参照）  
+　機能有効：Twitter=on  
+　　twitterリーダ ファイル：toot/twitter_reader.txt    
+　　　※中身はサンプルを参考にしてください  
+
+補足：  
+* twitterトレンドはtwitterサーバ側で5分毎に更新されるため、twitterで表示されているトレンドと異なる場合があります。  
+* twitterから収集するmastodonアカウントは、登録ユーザのうち1つで実行されます。  
+* るしぼっとと連携しているtwitterアカウントを普段使いしている場合、使い方によってはAPI不足によりるしぼっとの処理が失敗する場合があります。  
 
 
 

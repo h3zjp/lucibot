@@ -4,7 +4,7 @@
 # public
 #   Class   ：OS I/F (OS向け共通処理)
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/9/13
+#   Update  ：2019/11/24
 #####################################################
 # Private Function:
 #   (none)
@@ -148,6 +148,54 @@ class CLS_OSIF() :
 		# タイムゾーンで時間補正
 		try:
 			wRes['TimeDate'] = datetime.strptime( wTD, "%Y-%m-%d %H:%M:%S") + timedelta( hours=inTimezone )
+		except:
+			return wRes	#失敗
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 計算しやすいように時間フォーマットを変更する
+# (twitter時間)
+#####################################################
+	@classmethod
+	def sGetTimeformat_Twitter( cls, inTimedate, inTimezone=__DEF_LAG_TIMEZONE ):
+		wRes = {
+			"Result"	: False,
+			"Format"	: "",
+			"TimeDate"	: ""
+		}
+		
+		wTD = inTimedate
+		#############################
+		# タイムゾーンで時間補正
+		try:
+			###整形
+			wIfind = wTD.find('Z')
+			if wIfind>=0 :
+				### Trend形式
+				wTD = str( wTD )
+				wTD = wTD[0:wIfind]
+				wTD = wTD.split('T')
+				wTD = wTD[0] + " " + wTD[1]
+				
+				wTD = datetime.strptime( wTD, "%Y-%m-%d %H:%M:%S") + timedelta( hours=inTimezone )
+				wTD = str( wTD )
+				
+				wRes['Format'] = "TrendType"
+			else :
+				### Twitter形式
+				wTD = datetime.strptime( wTD, "%a %b %d %H:%M:%S %z %Y" ) + timedelta( hours=inTimezone )
+				wTD = str( wTD )
+				wIfind = wTD.find('+')
+				if wIfind>=0 :
+					wTD = wTD[0:wIfind]
+				
+				wRes['Format'] = "TwitterType"
+			
+			wRes['TimeDate'] = wTD
 		except:
 			return wRes	#失敗
 		
@@ -446,6 +494,17 @@ class CLS_OSIF() :
 				return False
 		
 		return True
+
+
+
+#####################################################
+# row['content']からURLを除去
+#####################################################
+	@classmethod
+	def sDel_URL( cls, inCont ):
+		wPatt = re.compile(r"https?:\/\/[-_\.!~*\'()a-zA-Z0-9;\/?:\@&=\+\$,%#]+")
+		wD_Cont = wPatt.sub( "", inCont )
+		return wD_Cont
 
 
 

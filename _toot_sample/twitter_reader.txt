@@ -1,0 +1,16 @@
+###＜注意＞
+###  以下に該当しないアカウントを設定することを禁止とします
+###  ・自分のアカウント
+###  ・twitter認証済みアカウント
+###  ・鍵がかかっていないこと
+
+###アカウント (P|,|twitterアカウント|,|正規表現パターン(省略可)|,|出力アカウント xxx@xxx|,|追加タグ(2個以上付加する場合は,区切り) )
+#P|,|azurlane_staff|,||,|lucida3free@mstdn.mynoghra.jp|,|azurlane_staff,azurlane
+
+
+
+###twitterトレンド (T|,|出力アカウント xxx@xxx)  複数設定時は一番上のみ有効
+#T|,|lucida3free@mstdn.mynoghra.jp
+
+
+

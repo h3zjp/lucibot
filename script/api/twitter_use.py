@@ -4,7 +4,7 @@
 # public
 #   Class   ：ついったーユーズ
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/8/31
+#   Update  ：2019/11/22
 #####################################################
 # Private Function:
 #   __initIniStatus(self):
@@ -48,13 +48,13 @@
 #twCS=
 #twAT=
 #twAS=
-#
-#Mode=home
-#List=
-#NoReply=on
-#Retweet=off
 #----------------------
 #  3.Connect( inPath=None )で接続する。
+#
+#####################################################
+# 参考：
+#   twitter api rate
+#     https://developer.twitter.com/en/docs/basics/rate-limits
 #
 #####################################################
 import os
@@ -64,7 +64,6 @@ import shutil
 import subprocess as sp
 from requests_oauthlib import OAuth1Session
 
-##from gval import gVal
 #####################################################
 class CLS_Twitter_Use():
 	Twitter_use = ''						#Twitterモジュール実体
@@ -76,19 +75,23 @@ class CLS_Twitter_Use():
 		"twCS"			: "",
 		"twAT"			: "",
 		"twAS"			: "",
-		
-		"Mode"			: "home",
-		"List"			: None,
-		"NoReply"		: "on",
-		"Retweet"		: "off"
 	}
 	
-	VAL_TwitNum = 120
+	VAL_TwitNum = 200
 
 	DEF_TWITTER_HOSTNAME = "twitter.com"	#Twitterホスト名
 	DEF_MOJI_ENCODE      = 'utf-8'			#ファイル文字エンコード
 	DEF_TWITTER_PING_COUNT   = "2"			#Ping回数 (文字型)
 ##	DEF_TWITTER_PING_TIMEOUT = "1000"		#Pingタイムアウト秒 (文字型)
+
+	#トレンド地域ID
+#	DEF_WOEID = "1"				#グローバル
+	DEF_WOEID = "23424856"		#日本
+		# idにはWOEID Lookupの地域IDを入れる
+		#   http://woeid.rosselliot.co.nz/
+		#   なんだけどエラー？で取得できない。なんやこれ...
+
+
 
 #####################################################
 # 初期化状態取得
@@ -145,11 +148,7 @@ class CLS_Twitter_Use():
 #####################################################
 # 初期化
 #####################################################
-##	def __init__(self):
-##	def __init__( self, inPath ):
-###	def __init__( self, inPath=None, inNoConn=False ):
-	def __init__( self, inPath=None, inGetNum=120, inNoConn=False ):
-##		self.__conn()	#接続
+	def __init__( self, inPath=None, inGetNum=200, inNoConn=False ):
 		if inNoConn==True :
 			##未接続モードで初期化
 			self.__NoConn( inPath )
@@ -251,154 +250,12 @@ class CLS_Twitter_Use():
 		print( "Twitterに接続成功しました!!" + '\n' )
 		
 		print( "Twitterの接続情報の作成中......" + '\n' )
-##		#############################
-##		# 書き込みデータを作成
-##		wSetLine = []
-##		wKeylist = self.STR_TWITTERdata.keys()
-##		for iKey in wKeylist :
-##			wLine = iKey + "=" + str(self.STR_TWITTERdata[iKey]) + '\n'
-##			wSetLine.append(wLine)
-##		
-##		#############################
-##		# ファイル上書き書き込み
-###		
-###		#############################
-###		# 存在チェック
-###		if os.path.exists( gVal.STR_File['Twitter_File'] )!=True :
-###			wStr = "作成失敗: ファイルがありません: " + gVal.STR_File['Twitter_File']
-###			print( wStr )
-###			return False	#失敗
-###		
-###		#############################
-###		# 書き込み
-##		try:
-##			wFile = codecs.open( inDstPath, 'w', self.DEF_MOJI_ENCODE )
-##			wFile.writelines( wSetLine )
-##			wFile.close()
-##		except ValueError as err :
-##			return False
-###		if self.SaveTwitter( gVal.STR_File['Twitter_File'] )!=True :
 		if self.SaveTwitter( inDstPath )!=True :
 			return False
 		
 		print( "Twitterの接続情報の作成 成功!!" + '\n' )
 		return True
 
-
-
-#####################################################
-# Twitterタイムライン設定
-#####################################################
-	def CnfTimeline( self, inPath ):
-		#############################
-		# Twitter接続情報ファイルのチェック
-		if( os.path.exists( inPath )==False ) :
-			##失敗
-			wStr = "CLS_Twitter_Use: CnfTimeline: Default Twitter file is not found: " + inPath + '\n'
-			print( wStr )
-			return False
-		
-		#############################
-		# メニューの表示
-		wStr = '\n' + "Twitterタイムラインの設定をします。" + '\n'
-		wStr = wStr + "Twitterタイムライン設定の変更をおこないますか？"
-		print( wStr )
-		wSelect = input( "変更する？(y/N)=> " ).strip()
-		if wSelect!="y" :
-			return True	#キャンセル
-		
-		#############################
-		# 自垢のリスト取得
-		wListsRes = self.GetLists()
-		if wListsRes['Result']!=True :
-			print( "Twitter API Error: " + wRes['Reason'] )
-			return False
-		wListID   = []
-		wListName = ""
-		wStrList  = ""
-		for wROW in wListsRes['Responce'] :
-			wListID.append( str(wROW['id']) )
-			wStrList = wStrList + str(wROW['id']) + "   " + str(wROW['slug']) + '\n'
-			if wROW['id']==self.STR_TWITTERdata['List'] :
-				wListName = wROW['slug']
-			##	CLS_OSIF.sPrn( "ID: " + str(wROW['id']) )
-			##	CLS_OSIF.sPrn( "Slug: " + str(wROW['slug']) )
-			##	CLS_OSIF.sPrn( "Mode: " + str(wROW['mode']) )
-			##	CLS_OSIF.sPrn( "Name: " + str(wROW['name']) + "(" + str(wROW['full_name']) + ")" )
-			##	CLS_OSIF.sPrn( "Disc: " + str(wROW['description']) )
-		
-		#############################
-		# タイムラインモード
-		wStr = '\n' + "タイムラインモードを設定してください。現在の設定。 Mode= " + self.STR_TWITTERdata['Mode']
-		if self.STR_TWITTERdata['Mode']=="list" :
-			wStr = wStr + " / ListName= " + wListName
-		wStr = wStr + '\n'
-		wStr = wStr + "  [1] ホーム / [2] ユーザ / [3] リスト / [other] 変更なし"
-		print( wStr )
-		wInput = input( "=> " ).strip()
-		if wInput=="1" :
-			self.STR_TWITTERdata['Mode'] = "home"
-		elif wInput=="2" :
-			self.STR_TWITTERdata['Mode'] = "user"
-		elif wInput=="3" :
-			self.STR_TWITTERdata['Mode'] = "list"
-		
-		#############################
-		# リストID
-		if self.STR_TWITTERdata['Mode']=="list" :
-			wStr = '\n' + "取得するリストのリストIDを設定してください。現在の設定。 List= " + str(self.STR_TWITTERdata['List']) + '\n'
-			print( wStr )
-			### 画面に表示
-			print( " List ID               List Name" )
-			print( wStrList )
-			wInput = input( "List ID=> " ).strip()
-			if wInput=="" :
-				if self.STR_TWITTERdata['List']==None :
-					print( "Twitterタイムライン設定の変更がキャンセルされました" )
-					return False	#キャンセル
-			if wInput!="" :
-				if wInput not in wListID :
-					if self.STR_TWITTERdata['List']==None :
-						print( "リストにないIDです。キャンセルします。" )
-						return False	#キャンセル
-					else :
-						print( "リストにないIDです。Listは変更されません。" )
-				else :
-					self.STR_TWITTERdata['List'] = int( wInput )
-		
-		#############################
-		# リプライを除外するか
-		wStr = '\n' + "リプライを除外するかを設定してください。現在の設定。 NoReply= " + self.STR_TWITTERdata['NoReply'] + '\n'
-		wStr = wStr + "  [1] 除外する / [2] 除外しない / [other] 変更なし"
-		print( wStr )
-		wInput = input( "=> " ).strip()
-		if wInput=="1" :
-			self.STR_TWITTERdata['NoReply'] = "on"
-		elif wInput=="2" :
-			self.STR_TWITTERdata['NoReply'] = "off"
-		
-		#############################
-		# リツイートを含めるか
-		wStr = '\n' + "リツイートを含めるかを設定してください。現在の設定。 Retweet= " + self.STR_TWITTERdata['Retweet'] + '\n'
-		wStr = wStr + "  [1] 含める / [2] 含めない / [other] 変更なし"
-		print( wStr )
-		wInput = input( "=> " ).strip()
-		if wInput=="1" :
-			self.STR_TWITTERdata['Retweet'] = "on"
-		elif wInput=="2" :
-			self.STR_TWITTERdata['Retweet'] = "off"
-		
-		print( "Twitterの接続情報の更新中......" + '\n' )
-		#############################
-		# セーブ
-###		if self.SaveTwitter( gVal.STR_File['Twitter_File'] )!=True :
-		if self.SaveTwitter( inPath )!=True :
-			wStr = "CLS_Twitter_Use: CnfTimeline: Twitter file save is failed: " + inPath + '\n'
-			print( wStr )
-			return False
-		
-		print( "Twitterの接続情報の更新 成功!!" + '\n' )
-		return True
 
 
 
@@ -414,11 +271,6 @@ class CLS_Twitter_Use():
 		self.STR_TWITTERdata['twAT'] = ""
 		self.STR_TWITTERdata['twAS'] = ""
 		
-		self.STR_TWITTERdata['Mode'] = "home"
-		self.STR_TWITTERdata['List'] = None
-		self.STR_TWITTERdata['NoReply'] = "on"
-		self.STR_TWITTERdata['Retweet'] = "off"
-
 		#############################
 		# 存在チェック
 		wRes = os.path.exists( inPath )
@@ -433,17 +285,14 @@ class CLS_Twitter_Use():
 				wLine = wLine.strip()
 				wLine = wLine.split("=")
 				if len(wLine)!=2 :
-					continue
+					continue	#範囲違い
+				if wLine[0] not in self.STR_TWITTERdata :
+					continue	#ないパラメータ
 				self.STR_TWITTERdata[wLine[0]] = wLine[1]
 			
 		except ValueError as err :
 			self.IniStatus['Reason'] = "CLS_Twitter_Use: __loadTwitter: Load Twitter file Failed: " + err
 			return False
-		
-		#############################
-		# 数値変換
-		if self.STR_TWITTERdata['List']!=None :
-			self.STR_TWITTERdata['List'] = int( self.STR_TWITTERdata['List'] )
 		
 		#############################
 		# 正常
@@ -580,20 +429,14 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# 通信テスト
-##		if CLS_OSIF.sPing( gVal.DEF_TWITTER_HOSTNAME )!=True :
 		if self.__TwitterPing()!=True :
 			self.IniStatus['Reason'] = "CLS_Twitter_Use: __conn: Twitter host no responce"
-##			return
 			return False
 		
 		#############################
 		# Twitterクラスの生成
 		try:
 			self.Twitter_use = OAuth1Session(
-##				gVal.STR_MasterConfig["twCK"],
-##				gVal.STR_MasterConfig["twCS"],
-##				gVal.STR_MasterConfig["twAT"],
-##				gVal.STR_MasterConfig["twAS"]
 				self.STR_TWITTERdata["twCK"],
 				self.STR_TWITTERdata["twCS"],
 				self.STR_TWITTERdata["twAT"],
@@ -601,11 +444,9 @@ class CLS_Twitter_Use():
 			)
 		except ValueError as err :
 			self.IniStatus['Reason'] = "CLS_Twitter_Use: __conn: Twitter error: " + str(err)
-##			return
 			return False
 		
 		self.IniStatus['Result'] = True		#Twitter初期化完了
-##		return
 		return True
 
 
@@ -613,7 +454,6 @@ class CLS_Twitter_Use():
 #####################################################
 # twitterサーバのPing確認
 #####################################################
-##	def __TwitterPing( self, inCount=4 ):
 	def __TwitterPing(self):
 ##		wStatus, wResult = sp.getstatusoutput( "ping -c " + str(inCount) + " " + str( self.DEF_TWITTER_HOSTNAME ) )
 ##		wPingComm = "ping -c " + self.DEF_TWITTER_PING_COUNT + " -w " + self.DEF_TWITTER_PING_TIMEOUT + " " + self.DEF_TWITTER_HOSTNAME
@@ -627,43 +467,19 @@ class CLS_Twitter_Use():
 
 
 #####################################################
-# 再接続
-#####################################################
-##	def ReConnect(self):
-##		self.__conn()	#接続
-##		return
-
-
-
-#####################################################
 # ついーと処理
 #####################################################
 	def Tweet( self, inTweet ):
 		#############################
 		# 応答形式の取得
 		#  {"Result" : False, "Reason" : None, "Responce" : None}
-##		wRes = CLS_OSIF.sGet_Resp()
 		wRes = self.__Get_Resp()
 		
-##		#############################
-##		# Twitterが利用可能か
-##		if gVal.STR_MasterConfig['Twitter'] != 'on' :
-##			wRes['Reason'] = "Twitter機能=off"
-##			return wRes
-##		
 		#############################
 		# 入力チェック
 		if inTweet=='' :
 			wRes['Reason'] = "Twitter内容がない"
 			return wRes
-		
-##		#############################
-##		# Twitterに接続
-##		self.ReConnect()
-##		wResIni = GetIniStatus()
-##		if wResIni['Result']!=True :
-##			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter connect error: " + wResIni['Reason']
-##			return wRes
 		
 		#############################
 		# 初期化状態のチェック
@@ -683,7 +499,6 @@ class CLS_Twitter_Use():
 		#############################
 		# ついーと
 		try:
-##			wTweetRes = self.Twitter_use.post( gVal.DEF_TWITTER_URL, params=wParams )
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
 			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter error: " + err
@@ -703,20 +518,12 @@ class CLS_Twitter_Use():
 #####################################################
 # タイムライン読み込み処理
 #####################################################
-##	def GetTL( self, inTLmode="user", inList=None, inReply=True, inRetweet=False ):
-	def GetTL(self):
+	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
 		#############################
 		# 応答形式の取得
 		#  {"Result" : False, "Reason" : None, "Responce" : None}
-##		wRes = CLS_OSIF.sGet_Resp()
 		wRes = self.__Get_Resp()
 		
-##		#############################
-##		# Twitterが利用可能か
-##		if gVal.STR_MasterConfig['Twitter'] != 'on' :
-##			wRes['Reason'] = "Twitter機能=off"
-##			return wRes
-##		
 		#############################
 		# 初期化状態のチェック
 		wResIni = self.GetIniStatus()
@@ -726,54 +533,32 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# APIの指定
-##		if inTLmode=="user" :
-		if self.STR_TWITTERdata['Mode']=="user" :
-			##ユーザタイムライン
-			wAPI = "https://api.twitter.com/1.1/statuses/user_timeline.json"
-		
-##		elif inTLmode=="home" :
-		elif self.STR_TWITTERdata['Mode']=="home" :
-			##ホームタイムライン (連合みたいなもの)
+		if inTLmode=="home" :
 			wAPI = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-		
-##		elif inTLmode=="list" :
-		elif self.STR_TWITTERdata['Mode']=="list" :
-			##リストタイムライン
-##			if inList==None :
-			if self.STR_TWITTERdata['List']==None :
-				wRes['Reason'] = "CLS_Twitter_Use: GetTL: List Name is null"
-				return wRes
+		elif inTLmode=="user" :
+			wAPI = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+		elif inTLmode=="list" and isinstance(inListID, int)==True :
 			wAPI = "https://api.twitter.com/1.1/lists/statuses.json"
-		
 		else :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Unknown timeline mode: " + inTLmode
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: inTLmode is invalid: " + str(inTLmode)
 			return wRes
 		
 		#############################
 		# パラメータの生成
-		
-		###Bool化
-			# on  = True
-			# off = False
-		wFLG_Reply   = True if self.STR_TWITTERdata['NoReply']==False else False
-		wFLG_Retweet = True if self.STR_TWITTERdata['Retweet']==False else False
-		
-##		if inTLmode=="list" :
-		if self.STR_TWITTERdata['Mode']=="list" :
+		if inTLmode=="list" :
 			wParams = {
-##				"count"       : gVal.STR_TLnum['getTwitTLnum'],
-				"count"       : self.VAL_TwitNum,
-				"list_id"     : self.STR_TWITTERdata['List']
+				"count"           : self.VAL_TwitNum,
+				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"exclude_replies" : inFLG_Rep,
+				"include_rts"     : inFLG_Rts,
+				"list_id"         : inListID
 			}
 		else :
 			wParams = {
-##				"count"       : gVal.STR_TLnum['getTwitTLnum'],
-				"count"       : self.VAL_TwitNum,
-				"screen_name" : self.STR_TWITTERdata['TwitterUser'],
-##				"exclude_replies" : inReply,
-##				"include_rts"     : inRetweet
-				"exclude_replies" : wFLG_Reply,
-				"include_rts"     : wFLG_Retweet
+				"count"           : self.VAL_TwitNum,
+				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"exclude_replies" : inFLG_Rep,
+				"include_rts"     : inFLG_Rts
 			}
 			## exclude_replies  : リプライを除外する True=除外
 			## include_rts      : リツイートを含める True=含める
@@ -810,14 +595,7 @@ class CLS_Twitter_Use():
 		#############################
 		# 応答形式の取得
 		#  {"Result" : False, "Reason" : None, "Responce" : None}
-##		wRes = CLS_OSIF.sGet_Resp()
 		wRes = self.__Get_Resp()
-		
-##		#############################
-##		# Twitterが利用可能か
-##		if gVal.STR_MasterConfig['Twitter'] != 'on' :
-##			wRes['Reason'] = "Twitter機能=off"
-##			return wRes
 		
 		#############################
 		# 初期化状態のチェック
@@ -833,7 +611,6 @@ class CLS_Twitter_Use():
 		#############################
 		# パラメータの生成
 		wParams = {
-##			"count"       : gVal.STR_TLnum['getTwitTLnum'],
 			"count"       : self.VAL_TwitNum,
 			"screen_name" : self.STR_TWITTERdata['TwitterUser'],
 		}
@@ -850,6 +627,57 @@ class CLS_Twitter_Use():
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# トレンド読み込み処理
+#####################################################
+	def GetTrends(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# 初期化状態のチェック
+		wResIni = self.GetIniStatus()
+		if wResIni['Result']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/trends/place.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"id" : self.DEF_WOEID
+		}
+		
+		#############################
+		# タイムライン読み込み
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		#############################

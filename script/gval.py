@@ -4,7 +4,7 @@
 # るしぼっと4
 #   Class   ：グローバル値
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/9/29
+#   Update  ：2019/11/21
 #####################################################
 
 #####################################################
@@ -46,7 +46,8 @@ class gVal() :
 		"iActionTag"		: "sample_action",			#アクション通知タグ
 		"prTag"				: "sample_prtoot",			#PRトゥートタグ
 		"TrafficTag"		: "sample_traffic",			#トラヒックトゥートタグ
-		"TwitterTag"		: "",						#Twitter用タグ
+		"TwitterTag"		: "",						#mastodon→Twitterタグ(twitter側でツイート用)
+		"TwitterReaderTag"	: "",						#Twitter→mastodonタグ(mastodon側でトゥート用)
 		"SystemTag"			: "sample_system",			#システム監視トゥートタグ
 		
 ##		"TwitterUser"	: "",						#twiterユーザ
@@ -75,6 +76,7 @@ class gVal() :
 		"Traffic"		: "off",					#トラヒック集計
 		"LookHard"		: "off",					#ハード監視
 		"WordStudy"		: "off",					#ワード学習
+		"Trend"			: "off",					#トレンド通知
 		
 		"JPonly"		: "off",					#日本人のみ監視
 		
@@ -156,7 +158,7 @@ class gVal() :
 		"AutoRemoveDays"	: 30,						#未活動時、自動リムーブまでの日数
 		"FollowNum"			: 10,						# 1周で処理するフォロー管理ユーザ数
 		
-		"getTwitTLnum"		: 120,						#TwitterのTL取得数
+		"getTwitTLnum"		: 200,						#TwitterのTL取得数
 		"(dummy)"			: ""
 	}
 
@@ -192,6 +194,7 @@ class gVal() :
 		
 		"MasterConfig_path"		: DEF_MASTERCONFIG,
 		"MasterConfig"			: DEF_MASTERCONFIG + "mconfig.txt",
+###		"MasterConfig"			: DEF_MASTERCONFIG + "mconfig_test.txt",
 		"MasterLog_path"		: DEF_MASTERCONFIG + "log/",
 ##		"MasterNowTrafficFile"	: DEF_MASTERCONFIG + "data/traffic_now.txt",
 ##		"MasterRatTrafficFile"	: DEF_MASTERCONFIG + "data/traffic_rat.txt",
@@ -202,10 +205,11 @@ class gVal() :
 		"PatternRIPFile"		: DEF_MASTERCONFIG + "toot/reply.txt",
 		"OtherRIPFile"			: DEF_MASTERCONFIG + "toot/reply_others.txt",
 		"StudyRIPFile"			: DEF_MASTERCONFIG + "toot/reply_study.txt",
+		"TrendTootFile"			: DEF_MASTERCONFIG + "toot/trend.txt",
 
 		"HTLBoostFile"			: DEF_MASTERCONFIG + "toot/hboost.txt",
 		"TrafficTootFile"		: DEF_MASTERCONFIG + "toot/traffic.txt",
-		"TweetPatternFile"		: DEF_MASTERCONFIG + "toot/twitter.txt",
+		"TwetterReaderFile"		: DEF_MASTERCONFIG + "toot/twitter_reader.txt",
 		"DBInfoFile"			: DEF_MASTERCONFIG + "toot/.dbinfo.txt",
 		
 ##		"DomainREMFile"			: DEF_MASTERCONFIG + "user/xxdomain.txt",

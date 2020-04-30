@@ -4,7 +4,7 @@
 # るしぼっと4
 #   Class   ：HTL監視処理
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/9/28
+#   Update  ：2020/1/6
 #####################################################
 # Private Function:
 #   __run(self):
@@ -36,6 +36,7 @@ class CLS_LookHTL():
 	ARR_AnapTL   = {}		#TL解析パターン
 	ARR_RateTL   = []		#過去TL(id)
 	ARR_UpdateTL = []		#新・過去TL(id)
+	ARR_NoBoost  = []		#ブースト外パターン
 
 	STR_Cope = {				#処理カウンタ
 		"Now_Cope"		: 0,	#処理した新トゥート数
@@ -184,6 +185,16 @@ class CLS_LookHTL():
 		wGetTime = str(wGetLag['InputTime'])
 		
 		#############################
+		# ブースト外パターンが含まれるか
+		for wLine in self.ARR_NoBoost :
+			### マッチチェック
+			wPatt = "#" + wLine
+			wRes = CLS_OSIF.sRe_Search( wPatt, wCont )
+			if wRes :
+				##パターンマッチ
+				return
+		
+		#############################
 		#解析種類の判定
 		wKeyList = self.ARR_AnapTL.keys()
 		for wKey in wKeyList :
@@ -194,9 +205,13 @@ class CLS_LookHTL():
 				if CLS_UserData.sCheckHardUser( self.Obj_Parent.CHR_Account )!=True :
 					continue
 				
-				### 自分が指定ユーザか
+##				### 自分が指定ユーザか
+##				if self.ARR_AnapTL[wKey]['Fulluser']!="" :
+##					if self.ARR_AnapTL[wKey]['Fulluser']!=self.Obj_Parent.CHR_Account :
+##						continue
+				### 対象トゥートが指定ユーザか
 				if self.ARR_AnapTL[wKey]['Fulluser']!="" :
-					if self.ARR_AnapTL[wKey]['Fulluser']!=self.Obj_Parent.CHR_Account :
+					if self.ARR_AnapTL[wKey]['Fulluser']!=wFulluser['Fulluser'] :
 						continue
 				### 無指定の場合、登録ユーザか(第三者避け)
 				else :
@@ -212,7 +227,9 @@ class CLS_LookHTL():
 					continue
 				### 実行
 ##				if self.TwitterBoost( inROW['id'] )!=True :
-				if self.TwitterBoost( inROW['id'], wFulluser )!=True :
+##				if self.TwitterBoost( inROW['id'], wFulluser )!=True :
+##				if self.TwitterBoost( inROW['id'], wFulluser, wCont )!=True :
+				if self.TwitterBoost( inROW['id'], wFulluser, wCont, self.ARR_AnapTL[wKey]['TwitterTags'] )!=True :
 					self.STR_Cope['Invalid'] += 1
 				else :
 					self.STR_Cope["Now_Twitter"] += 1
@@ -265,7 +282,7 @@ class CLS_LookHTL():
 					continue	#指定ではない
 				
 				#対象のブーストユーザか
-				if self.ARR_AnapTL[wKey]['Tag']!=wFulluser :
+				if self.ARR_AnapTL[wKey]['Tag']!=wFulluser['Fulluser'] :
 					continue	#指定ではない
 				
 				### 実行
@@ -316,129 +333,6 @@ class CLS_LookHTL():
 		return True
 
 
-
-#####################################################
-# 新トゥートへの対応
-#####################################################
-#	def __cope( self, inROW ) :
-###		wHitPatt = []
-#		
-#		#公開トゥート以外は除外
-#		if inROW['visibility']!="public" :
-#			self.STR_Cope['Outrange'] += 1
-#			return
-#		
-#		wCont = CLS_OSIF.sDel_HTML( inROW['content'] )
-#		#リプライは除外（先頭に@付きトゥート）
-#		if wCont.find('@') == 0 :
-#			self.STR_Cope['Outrange'] += 1
-#			return
-#		
-#		#通知は除外
-##		if wCont.find( gVal.STR_MasterConfig['iFavoTag'] ) >= 0 :
-#		if wCont.find( gVal.STR_MasterConfig['iActionTag'] ) >= 0 :
-#			self.STR_Cope['Outrange'] += 1
-#			return
-#		
-#		#ブーストトゥートは除外
-#		if inROW['reblog']!=None :
-#			self.STR_Cope['Outrange'] += 1
-#			return
-#		
-#		#############################
-#		# 相手ユーザ名
-#		wFulluser = CLS_UserData.sGetFulluser( inROW['account']['username'], inROW['account']['url'] )
-#		if wFulluser['Result']!=True :
-#			self.STR_Cope['Invalid'] += 1
-#			return
-#		wFulluser = wFulluser['Fulluser']
-#		#自分ならスキップ
-#		if wFulluser == self.Obj_Parent.CHR_Account :
-#			self.STR_Cope['Invalid'] += 1
-#			return
-#		
-#		#############################
-#		# トゥートの時間 (変換＆差)
-###		wReaRIPmin = gVal.STR_Config['reaRIPmin'] * 60	#秒に変換
-#		wReaRIPmin = gVal.DEF_STR_TLNUM['reaRIPmin'] * 60	#秒に変換
-#		wGetLag = CLS_OSIF.sTimeLag( str(inROW['created_at']), inThreshold=wReaRIPmin )
-#		if wGetLag['Result']!=True :
-#			self.STR_Cope['Invalid'] += 1
-#			return
-#		if wGetLag['Beyond']==True :
-#			self.STR_Cope['OffTime'] += 1
-#			return	#反応時間外
-#		wGetTime = str(wGetLag['InputTime'])
-#		
-#		wKeylist  = self.ARR_AnapTL.keys()
-#		#############################
-#		#解析種類の判定
-#		for wKey in wKeylist :
-#			wKind = self.ARR_AnapTL[wKey]['Kind']
-#			
-#			#############################
-#			#解析：ブースト
-#			if wKind == 'h' :
-####				#############################
-####				#既に同じ処理をしたか
-###				if CLS_UserData.sChkHitPatt( wHitPatt, wKind )==True :
-###					continue	#既に同じ処理した
-#				
-#				#############################
-#				#自分が指定ユーザか
-#				if self.ARR_AnapTL[wKey]['Fulluser']!="" :
-#					if self.ARR_AnapTL[wKey]['Fulluser']!=self.Obj_Parent.CHR_Account :
-#						continue
-#				
-#				#############################
-#				#無指定の場合、登録ユーザか(第三者避け)
-#				else :
-#					wUserList = CLS_UserData.sGetUserList()
-#					if wFulluser not in wUserList :
-#						continue
-#				
-#				#############################
-#				#パターンマッチ
-#				wPatt = "#" + self.ARR_AnapTL[wKey]['Tag']
-#				wMatch = CLS_OSIF.sRe_Search( wPatt, wCont )
-#				if wMatch :
-#					wRes = self.Obj_Parent.OBJ_MyDon.Boost( inROW['id'] )
-#					if wRes['Result']!=True :
-#						self.STR_Cope['Invalid'] += 1
-#						return	#失敗
-#					
-#					self.STR_Cope["Now_Boot"] += 1
-###					wHitPatt.append( wKind )
-#					break	# 1つの実行で止めておく
-#		
-#			#############################
-#			#解析：指定フルブースト
-#			if wKind == 'p' :
-###				#############################
-###				#既に同じ処理をしたか
-###				if CLS_UserData.sChkHitPatt( wHitPatt, wKind )==True :
-###					continue	#既に同じ処理した
-#				
-#				#############################
-#				#自分が指定ユーザではない
-#				if self.ARR_AnapTL[wKey]['Fulluser']!=self.Obj_Parent.CHR_Account :
-#					continue	#指定ではない
-#				
-#				#############################
-#				#対象のブーストユーザか
-#				if self.ARR_AnapTL[wKey]['Tag']==wFulluser :
-#					wRes = self.Obj_Parent.OBJ_MyDon.Boost( inROW['id'] )
-#					if wRes['Result']!=True :
-#						self.STR_Cope['Invalid'] += 1
-#						return	#失敗
-#					
-#					self.STR_Cope["Now_Boot"] += 1
-###					wHitPatt.append( wKind )
-#					break	# 1つの実行で止めておく
-#		
-#		return
-#
-#
 
 #####################################################
 # HTL取得
@@ -530,6 +424,7 @@ class CLS_LookHTL():
 		#############################
 		# 読み出し先初期化
 		self.ARR_AnapTL = {}
+		self.ARR_NoBoost = []
 		wAnapList = []	#解析パターンファイル
 		
 		#############################
@@ -544,16 +439,24 @@ class CLS_LookHTL():
 		wIndex = 0
 		for wLine in wAnapList :
 			wLine = wLine.split( gVal.DEF_DATA_BOUNDARY )
-			if len(wLine)!=3 :
+			if len(wLine)==3 :
+							#旧フォーマット
+				wLine.append("")
+			if len(wLine)!=4 :
 				continue	#フォーマットになってない
 			if wLine[0].find("#")==0 :
 				continue	#コメントアウト
+			
+			if wLine[0]=="n" :	#ブースト外
+				self.ARR_NoBoost.append( wLine[1] )
+				continue
 			
 			self.ARR_AnapTL.update({ wIndex : "" })
 			self.ARR_AnapTL[wIndex] = {}
 			self.ARR_AnapTL[wIndex].update({ "Kind"     : wLine[0] })
 			self.ARR_AnapTL[wIndex].update({ "Tag"      : wLine[1] })
 			self.ARR_AnapTL[wIndex].update({ "Fulluser" : wLine[2] })
+			self.ARR_AnapTL[wIndex].update({ "TwitterTags" : wLine[3] })
 			wIndex += 1
 		
 		if len(self.ARR_AnapTL)==0 :
@@ -582,23 +485,62 @@ class CLS_LookHTL():
 #####################################################
 # ついったー転送
 #####################################################
-##	def TwitterBoost( self, inID ) :
-	def TwitterBoost( self, inID, inFulluser ) :
-##		#############################
-##		# ユーザ名の変換
-##		wFulluser = CLS_UserData.sUserCheck( self.Obj_Parent.CHR_Account )
-##		if wFulluser['Result']!=True :
-##			###今のところ通らないルート
-##			return False
-##		wDomain = wFulluser['Domain']
+###	def TwitterBoost( self, inID, inFulluser ) :
+###	def TwitterBoost( self, inID, inFulluser, inCont ) :
+	def TwitterBoost( self, inID, inFulluser, inCont, inTwitterTags ) :
+		if len(inCont)<=0 :
+			###ありえない
+			self.Obj_Parent.OBJ_Mylog.Log( 'a', "CLS_LookHTL: TwitterBoost: Content size is zero" )
+			return False
 		
 		#############################
-		# ファボられたトゥートURL
-##		wToot_Url = "https://" + wDomain + gVal.DEF_TOOT_SUBURL + str(inID)
-##		wToot_Url = "https://" + wDomain + "/@" + wFulluser['User'] + "/" + str(inID)
-		wToot_Url = "https://" + inFulluser['Domain'] + "/@" + inFulluser['Username'] + "/" + str(inID)
-		wCHR_Tweet = "mastodonから転送:" + '\n' + wToot_Url
+		# Twitterタグ
+		wTwitterTags = ""
+		if inTwitterTags!="" :
+			wARR_TwitterTags = inTwitterTags.split(",")
+			for wLine in wARR_TwitterTags :
+				wTwitterTags = wTwitterTags + " #" + wLine
 		
+		#############################
+		# ツイートの組み立て
+		### ファボられたトゥートURL
+		wToot_Url = " https://" + inFulluser['Domain'] + "/@" + inFulluser['Username'] + "/" + str(inID)
+		
+		### 頭とトゥートURLを抜いた文字数
+##		wMAX_Tweet = 140 - len( wToot_Url )
+		wMAX_Tweet = 140 - len( wToot_Url ) - len( wTwitterTags )
+		if wMAX_Tweet<=0 :
+			###ありえない
+			self.Obj_Parent.OBJ_Mylog.Log( 'a', "CLS_LookHTL: TwitterBoost: Tweet Header size is zero" )
+			return False
+		
+		### 本文の短縮化
+		wCHR_Body = inCont
+		
+		wCHR_Body = wCHR_Body.replace( '\n', '' )
+		wIndex = inCont.find("#")
+		wCHR_Body = wCHR_Body[0:wIndex]
+		wCHR_Body = wCHR_Body.strip()
+		wCHR_Body = CLS_OSIF.sDel_URL( wCHR_Body )	#URLを除去
+		
+			# 読点で140字に収まるまで切る
+		wARR_Body = wCHR_Body.split("。")
+		wNew_Body = ""
+		if len(wARR_Body)>2 :
+			for wLine in wARR_Body :
+				if wLine=="" :
+					break	#最終桁
+				wLine = wLine + "。"	#最初に読点補完
+				wComp = wNew_Body + wLine
+				if len(wComp)>wMAX_Tweet :
+					break	#140字超えた
+				wNew_Body = wNew_Body + wLine
+			wCHR_Body = wNew_Body
+		else :
+			wCHR_Body = wCHR_Body[0:wMAX_Tweet]
+		
+##		wCHR_Tweet = wCHR_Body + wToot_Url
+		wCHR_Tweet = wCHR_Body + wTwitterTags + wToot_Url
 		#############################
 		# Twitterへ投稿
 		wRes = self.Obj_Parent.OBJ_Twitter.Tweet( wCHR_Tweet )

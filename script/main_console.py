@@ -4,7 +4,7 @@
 # るしぼっと4
 #   Class   ：メイン処理(コンソール)
 #   Site URL：https://mynoghra.jp/
-#   Update  ：2019/9/10
+#   Update  ：2019/12/17
 #####################################################
 # Private Function:
 #   __getLucibotVer(cls):
@@ -31,6 +31,7 @@ from regist import CLS_Regist
 from userdata import CLS_UserData
 from bot_ctrl import CLS_Bot_Ctrl
 from dbedit import CLS_DBedit
+from logarcive import CLS_LogArcive
 
 from twitter_use import CLS_Twitter_Use
 from gval import gVal
@@ -294,12 +295,18 @@ class CLS_Main_Console() :
 			wCLS_work = CLS_Config()
 			wCLS_work.CnfTwitter()	#有効無効設定
 			
-			##タイムラインの設定
-			CLS_OSIF.sPrn( '\n' + "Twitterと接続しています......" )
-			wCLS_Twitter = CLS_Twitter_Use( gVal.DEF_STR_FILE['Twitter_File'], gVal.DEF_STR_TLNUM['getTwitTLnum'] )
-			if gVal.STR_MasterConfig['Twitter']=="on" :
-				wCLS_Twitter.CnfTimeline( gVal.DEF_STR_FILE['Twitter_File'] )
-			
+##			##タイムラインの設定
+##			CLS_OSIF.sPrn( '\n' + "Twitterと接続しています......" )
+##			wCLS_Twitter = CLS_Twitter_Use( gVal.DEF_STR_FILE['Twitter_File'], gVal.DEF_STR_TLNUM['getTwitTLnum'] )
+##			if gVal.STR_MasterConfig['Twitter']=="on" :
+##				wCLS_Twitter.CnfTimeline( gVal.DEF_STR_FILE['Twitter_File'] )
+##			
+			wFlg = True
+		#############################
+		# ログアーカイブ
+		elif inCommand=="\\arc" :
+			wCLS_work = CLS_LogArcive()
+			wCLS_work.Run()
 			wFlg = True
 		
 		return wFlg
