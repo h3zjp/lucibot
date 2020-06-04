@@ -172,7 +172,7 @@ class CLS_LookLTL():
 		while (len(self.ARR_NewTL) < wMax_Toots ):
 			#############################
 			# TL取得
-			wRes = self.Obj_Parent.OBJ_MyDon.GetLocalTL( limit=40, max_id=wNext_Id )
+			wRes = self.Obj_Parent.OBJ_MyDon.GetPublicTL( limit=40, max_id=wNext_Id )
 			if wRes['Result']!=True :
 				return wRes	#失敗
 			
